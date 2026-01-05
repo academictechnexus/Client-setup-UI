@@ -9,11 +9,31 @@ export default function Wizard({ token, questions }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [setupDone, setSetupDone] = useState(false);
+  const total = questions.length;
 
   const q = questions[step];
 
+  // ✅ Safety guard – never disappear
+  if (!q && !setupDone) {
+    return (
+      <div className="center">
+        <div className="card">
+          <h2>Setup completed</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Detect upload step robustly
+  const isUpload =
+    q?.type === "file" ||
+    q?.type === "upload" ||
+    q?.type === "document" ||
+    q?.key === "documents" ||
+    q?.key === "uploads";
+
   const next = async () => {
-    if (step === questions.length - 1) {
+    if (step === total - 1) {
       await api.post(`/client-setup/${token}/setup`, { answers });
       setSetupDone(true);
     } else {
@@ -28,25 +48,25 @@ export default function Wizard({ token, questions }) {
   return (
     <div className="center">
       <div className="card">
-        <ProgressBar step={step} total={questions.length} />
+        <ProgressBar step={step} total={total} />
 
         <h2>{q.label}</h2>
         {q.description && <p>{q.description}</p>}
 
-        {q.type === "file" ? (
+        {isUpload ? (
           <FileUpload token={token} />
         ) : (
           <QuestionField
             question={q}
             value={answers[q.key]}
             onChange={v =>
-              setAnswers({ ...answers, [q.key]: v })
+              setAnswers(prev => ({ ...prev, [q.key]: v }))
             }
           />
         )}
 
         <button onClick={next}>
-          {step === questions.length - 1 ? "Finish Setup" : "Continue"}
+          {step === total - 1 ? "Finish Setup" : "Continue"}
         </button>
       </div>
     </div>
