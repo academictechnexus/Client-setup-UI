@@ -64,3 +64,21 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+button {
+  min-width: 120px;
+}
+
+button:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+}
