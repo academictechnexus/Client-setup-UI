@@ -9,11 +9,11 @@ export default function Wizard({ token, questions }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [setupDone, setSetupDone] = useState(false);
-  const total = questions.length;
 
+  const total = questions.length;
   const q = questions[step];
 
-  // ✅ Safety guard – never disappear
+  // 🛡 Safety guard
   if (!q && !setupDone) {
     return (
       <div className="center">
@@ -24,7 +24,7 @@ export default function Wizard({ token, questions }) {
     );
   }
 
-  // ✅ Detect upload step robustly
+  // 📎 Detect upload steps robustly
   const isUpload =
     q?.type === "file" ||
     q?.type === "upload" ||
@@ -37,8 +37,12 @@ export default function Wizard({ token, questions }) {
       await api.post(`/client-setup/${token}/setup`, { answers });
       setSetupDone(true);
     } else {
-      setStep(step + 1);
+      setStep(prev => prev + 1);
     }
+  };
+
+  const back = () => {
+    if (step > 0) setStep(prev => prev - 1);
   };
 
   if (setupDone) {
@@ -53,21 +57,43 @@ export default function Wizard({ token, questions }) {
         <h2>{q.label}</h2>
         {q.description && <p>{q.description}</p>}
 
-        {isUpload ? (
-          <FileUpload token={token} />
-        ) : (
-          <QuestionField
-            question={q}
-            value={answers[q.key]}
-            onChange={v =>
-              setAnswers(prev => ({ ...prev, [q.key]: v }))
-            }
-          />
-        )}
+        <div style={{ marginBottom: 24 }}>
+          {isUpload ? (
+            <FileUpload token={token} />
+          ) : (
+            <QuestionField
+              question={q}
+              value={answers[q.key]}
+              onChange={v =>
+                setAnswers(prev => ({ ...prev, [q.key]: v }))
+              }
+            />
+          )}
+        </div>
 
-        <button onClick={next}>
-          {step === total - 1 ? "Finish Setup" : "Continue"}
-        </button>
+        {/* 🔘 Action buttons */}
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            justifyContent: "space-between"
+          }}
+        >
+          <button
+            onClick={back}
+            disabled={step === 0}
+            style={{
+              background: "#e5e7eb",
+              color: "#111827"
+            }}
+          >
+            Back
+          </button>
+
+          <button onClick={next}>
+            {step === total - 1 ? "Finish Setup" : "Continue"}
+          </button>
+        </div>
       </div>
     </div>
   );
